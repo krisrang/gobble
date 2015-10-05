@@ -1,0 +1,22 @@
+{
+	"ImportPath": "github.com/krisrang/gobble",
+	"GoVersion": "go1.5.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/ant0ine/go-json-rest/rest",
+			"Comment": "v3.2.0-11-g2af9d00",
+			"Rev": "2af9d0034afcd83101abb1945f2a65ddbd563719"
+		},
+		{
+			"ImportPath": "github.com/shiblon/entrogo/mealy",
+			"Rev": "b50179475803262bc8476b3910d939c4dc4eae2c"
+		},
+		{
+			"ImportPath": "github.com/shiblon/entrogo/scrabble/index",
+			"Rev": "b50179475803262bc8476b3910d939c4dc4eae2c"
+		}
+	]
+}
