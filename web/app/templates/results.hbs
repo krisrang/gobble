@@ -1,0 +1,20 @@
+<thead>
+  <tr>
+    <th>Word</th>
+    <th>Length</th>
+    <th>Score</th>
+  </tr>
+</thead>
+<tbody>
+  {{#each model.result as |word|}}
+    <tr class="result">
+      <td>{{format-word word.string tiles=model.tiles}}</td>
+      <td>{{word-length word.string}}</td>
+      <td>{{word.score}}</td>
+    </tr>
+  {{else}}
+    <tr>
+      <td colspan="2">No results</td>
+    </tr>
+  {{/each}}
+</tbody>

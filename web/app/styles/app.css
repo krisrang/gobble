@@ -1,0 +1,10 @@
+.letter, .wildcard {
+  padding: 0 1px;
+}
+
+.wildcard {
+  background: #FFF768;
+  border-radius: 5px;
+  padding: 0 2px;
+  margin: 0 -1px;
+}

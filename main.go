@@ -31,8 +31,8 @@ var (
 )
 
 type Word struct {
-	String string
-	Score  int
+	String string `json:"string,omitempty"`
+	Score  int    `json:"score,omitempty"`
 }
 
 func NewWord(word string, wwf bool) Word {
@@ -88,10 +88,6 @@ func PossibleWords(idx index.Index, available map[byte]int, wwf bool) []Word {
 	return out
 }
 
-func Index(w rest.ResponseWriter, r *rest.Request) {
-	rest.NotFound(w, r)
-}
-
 func GetScrabble(w rest.ResponseWriter, r *rest.Request) {
 	tiles := TileCounts(strings.Replace(r.PathParam("tiles"), "+", ".", -1))
 	words := PossibleWords(scrabbleIndex, tiles, true)
@@ -143,7 +139,6 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		rest.Get("/", Index),
 		rest.Get("/scrabble/:tiles", GetScrabble),
 		rest.Get("/wwf/:tiles", GetWords),
 	)
@@ -152,6 +147,9 @@ func main() {
 	}
 	api.SetApp(router)
 
+	http.Handle("/api/", http.StripPrefix("/api", api.MakeHandler()))
+	http.Handle("/", http.FileServer(http.Dir("./web/build")))
+
 	log.Println("Listening on " + port)
-	log.Fatal(http.ListenAndServe(":"+port, api.MakeHandler()))
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
