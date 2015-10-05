@@ -110,6 +110,37 @@ func GetWords(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&result)
 }
 
+type hijack404 struct {
+	http.ResponseWriter
+	R         *http.Request
+	Handle404 func(w http.ResponseWriter, r *http.Request) bool
+}
+
+func (h *hijack404) WriteHeader(code int) {
+	if 404 == code && h.Handle404(h.ResponseWriter, h.R) {
+		panic(h)
+	}
+	h.ResponseWriter.WriteHeader(code)
+}
+
+// Handle404 will pass any 404's from the handler to the handle404
+// function. If handle404 returns true, the response is considered complete,
+// and the processing by handler is aborted.
+func Handle404(handler http.Handler, handle404 func(w http.ResponseWriter, r *http.Request) bool) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hijack := &hijack404{ResponseWriter: w, R: r, Handle404: handle404}
+		defer func() {
+			if p := recover(); p != nil {
+				if p == hijack {
+					return
+				}
+				panic(p)
+			}
+		}()
+		handler.ServeHTTP(hijack, r)
+	})
+}
+
 func main() {
 	wwffile, err := os.Open(wwfFile)
 	if err != nil {
@@ -148,7 +179,15 @@ func main() {
 	api.SetApp(router)
 
 	http.Handle("/api/", http.StripPrefix("/api", api.MakeHandler()))
-	http.Handle("/", http.FileServer(http.Dir("./web/build")))
+	http.Handle("/", Handle404(http.FileServer(http.Dir("./web/build")), func(w http.ResponseWriter, r *http.Request) bool {
+		if strings.Contains(r.Header.Get("Accept"), "text/html") {
+			w.Header().Set("Content-Type", "text/html")
+			http.ServeFile(w, r, "./web/build/index.html")
+			return true
+		}
+
+		return false
+	}))
 
 	log.Println("Listening on " + port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
